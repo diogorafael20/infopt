@@ -62,15 +62,28 @@ async function parseFeed(feedUrl: string) {
 
     while ((match = itemRegex.exec(text)) !== null) {
       const item = match[1];
-      const title = item.match(/<title[^>]*>(.*?)<\/title>/)?.[1] || 'No title';
-      const link = item.match(/<link[^>]*>(.*?)<\/link>/)?.[1] || '';
-      const description = item.match(/<description[^>]*>(.*?)<\/description>/)?.[1] || '';
-      const pubDate = item.match(/<pubDate[^>]*>(.*?)<\/pubDate>/)?.[1] || '';
+
+      // Extract content, handling CDATA sections
+      const extractContent = (regex: RegExp) => {
+        const match = regex.exec(item);
+        if (!match) return '';
+        let content = match[1];
+        // Remove CDATA markers if present
+        if (content.includes('<![CDATA[')) {
+          content = content.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1');
+        }
+        return content;
+      };
+
+      const title = extractContent(/<title[^>]*>(.*?)<\/title>/s) || 'No title';
+      const link = extractContent(/<link[^>]*>(.*?)<\/link>/s) || '';
+      const description = extractContent(/<description[^>]*>(.*?)<\/description>/s) || '';
+      const pubDate = extractContent(/<pubDate[^>]*>(.*?)<\/pubDate>/s) || '';
 
       items.push({
-        title: decodeHTML(title.replace(/<[^>]*>/g, '')),
-        link,
-        description: decodeHTML(description.replace(/<[^>]*>/g, '')).substring(0, 200),
+        title: decodeHTML(title.replace(/<[^>]*>/g, '').trim()),
+        link: link.trim(),
+        description: decodeHTML(description.replace(/<[^>]*>/g, '').trim()).substring(0, 200),
         pubDate,
       });
     }
