@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import './App.css'
 
-const API_URL = 'https://infopt.diogorafael212.workers.dev'
+const API_URL = 'https://infopt.diogorafael212.workers.dev' // News aggregator API
 
 export default function App() {
   const [categoria, setCategoria] = useState('portugal')
