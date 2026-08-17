@@ -35,5 +35,3 @@ Depois:
 ```bash
 eas build --platform all
 ```
-
-Depois publiquemos em TestFlight (iOS) e Google Play (Android).
