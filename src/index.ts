@@ -27,6 +27,28 @@ const NEWS_SOURCES = {
   ],
 };
 
+// Decode HTML entities
+function decodeHTML(html: string): string {
+  const entities = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#8220;': '"',
+    '&#8221;': '"',
+    '&#8217;': "'",
+    '&#39;': "'",
+    '&nbsp;': ' ',
+  };
+  let text = html;
+  for (const [entity, char] of Object.entries(entities)) {
+    text = text.replace(new RegExp(entity, 'g'), char);
+  }
+  // Decode numeric entities like &#123;
+  text = text.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+  return text;
+}
+
 // Parse RSS feed
 async function parseFeed(feedUrl: string) {
   try {
@@ -46,9 +68,9 @@ async function parseFeed(feedUrl: string) {
       const pubDate = item.match(/<pubDate[^>]*>(.*?)<\/pubDate>/)?.[1] || '';
 
       items.push({
-        title: title.replace(/<[^>]*>/g, ''),
+        title: decodeHTML(title.replace(/<[^>]*>/g, '')),
         link,
-        description: description.replace(/<[^>]*>/g, '').substring(0, 200),
+        description: decodeHTML(description.replace(/<[^>]*>/g, '')).substring(0, 200),
         pubDate,
       });
     }
