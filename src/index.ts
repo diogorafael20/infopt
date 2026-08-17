@@ -60,6 +60,24 @@ async function parseFeed(feedUrl: string) {
   }
 }
 
+// Root endpoint
+router.get('/', () => {
+  return new Response(
+    JSON.stringify({
+      name: 'InfoPT',
+      description: 'Portuguese news aggregator',
+      version: '0.1.0',
+      endpoints: {
+        news: '/api/news/:category (portugal|internacional|futebol|financas)',
+        health: '/health',
+      },
+    }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+});
+
 // Fetch news from all sources
 router.get('/api/news/:category?', async (request) => {
   const category = (request as any).params.category || 'portugal';
