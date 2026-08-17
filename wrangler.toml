@@ -2,14 +2,3 @@ name = "infopt"
 main = "src/index.ts"
 compatibility_date = "2024-12-16"
 compatibility_flags = ["nodejs_compat"]
-
-[env.production]
-name = "infopt-prod"
-routes = [
-  { pattern = "infopt.pages.dev/*", zone_name = "infopt.dev" }
-]
-
-[[d1_databases]]
-binding = "DB"
-database_name = "infopt"
-database_id = "infopt-db"
