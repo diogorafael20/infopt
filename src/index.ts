@@ -44,16 +44,47 @@ function decodeHTML(html: string): string {
   for (const [entity, char] of Object.entries(entities)) {
     text = text.replace(new RegExp(entity, 'g'), char);
   }
-  // Decode numeric entities like &#123;
-  text = text.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+  // Decode decimal and hexadecimal numeric entities.
+  text = text.replace(/&#(x?[0-9a-f]+);/gi, (_, value) => {
+    const codePoint = value[0].toLowerCase() === 'x'
+      ? parseInt(value.slice(1), 16)
+      : parseInt(value, 10);
+    return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : _;
+  });
   return text;
+}
+
+function readCharset(response: Response, bytes: Uint8Array): string {
+  const headerCharset = response.headers.get('content-type')?.match(/charset\s*=\s*["']?([^;\s"']+)/i)?.[1];
+  if (headerCharset) return headerCharset;
+
+  const declaration = new TextDecoder('ascii').decode(bytes.slice(0, 250));
+  return declaration.match(/<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i)?.[1] || 'utf-8';
+}
+
+async function readFeedText(response: Response): Promise<string> {
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const charset = readCharset(response, bytes);
+
+  try {
+    return new TextDecoder(charset).decode(bytes);
+  } catch {
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+}
+
+function cleanFeedText(value: string): string {
+  let text = decodeHTML(value);
+  text = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
+  text = text.replace(/<[^>]*>/g, ' ');
+  return decodeHTML(text).replace(/\s+/g, ' ').trim();
 }
 
 // Parse RSS feed
 async function parseFeed(feedUrl: string) {
   try {
     const response = await fetch(feedUrl);
-    const text = await response.text();
+    const text = await readFeedText(response);
 
     // Simple XML parsing (basic implementation)
     const items: any[] = [];
@@ -63,16 +94,11 @@ async function parseFeed(feedUrl: string) {
     while ((match = itemRegex.exec(text)) !== null) {
       const item = match[1];
 
-      // Extract content, handling CDATA sections
+      // Extract raw XML content. It is normalized after HTML entities are decoded.
       const extractContent = (regex: RegExp) => {
         const match = regex.exec(item);
         if (!match) return '';
-        let content = match[1];
-        // Remove CDATA markers if present
-        if (content.includes('<![CDATA[')) {
-          content = content.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1');
-        }
-        return content;
+        return match[1];
       };
 
       const title = extractContent(/<title[^>]*>(.*?)<\/title>/s) || 'No title';
@@ -81,9 +107,9 @@ async function parseFeed(feedUrl: string) {
       const pubDate = extractContent(/<pubDate[^>]*>(.*?)<\/pubDate>/s) || '';
 
       items.push({
-        title: decodeHTML(title.replace(/<[^>]*>/g, '').trim()),
-        link: link.trim(),
-        description: decodeHTML(description.replace(/<[^>]*>/g, '').trim()).substring(0, 200),
+        title: cleanFeedText(title),
+        link: cleanFeedText(link),
+        description: cleanFeedText(description).substring(0, 200),
         pubDate,
       });
     }
