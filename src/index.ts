@@ -9,6 +9,7 @@ const NEWS_SOURCES = {
     { name: 'Observador', url: 'https://observador.pt/feed/' },
     { name: 'Expresso', url: 'https://expresso.pt/rss' },
     { name: 'Visão', url: 'https://visao.pt/rss' },
+    { name: 'TSF', url: 'https://feeds.feedburner.com/TSF-Ultimas' },
   ],
   internacional: [
     { name: 'BBC', url: 'http://feeds.bbc.co.uk/news/world/rss.xml' },
