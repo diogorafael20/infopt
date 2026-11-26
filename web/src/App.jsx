@@ -39,7 +39,6 @@ function metaFonte(nome) {
 function logoCandidates(domain) {
   if (!domain) return []
   return [
-    `https://logo.clearbit.com/${domain}?size=128`,
     `https://icons.duckduckgo.com/ip3/${domain}.ico`,
     `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`,
   ]
