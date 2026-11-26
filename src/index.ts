@@ -81,6 +81,27 @@ function cleanFeedText(value: string): string {
   return decodeHTML(text).replace(/\s+/g, ' ').trim();
 }
 
+function extractImage(item: string): string {
+  const patterns = [
+    /<media:content[^>]*url=["']([^"']+)["'][^>]*medium=["']image["'][^>]*\/?>/i,
+    /<media:content[^>]*medium=["']image["'][^>]*url=["']([^"']+)["'][^>]*\/?>/i,
+    /<media:content[^>]*url=["']([^"']+\.(?:jpg|jpeg|png|webp|gif)[^"']*)["'][^>]*\/?>/i,
+    /<media:thumbnail[^>]*url=["']([^"']+)["'][^>]*\/?>/i,
+    /<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image[^"']*["'][^>]*\/?>/i,
+    /<enclosure[^>]*type=["']image[^"']*["'][^>]*url=["']([^"']+)["'][^>]*\/?>/i,
+    /<img[^>]*src=["']([^"']+)["'][^>]*\/?>/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = item.match(pattern);
+    if (!match?.[1]) continue;
+    const url = decodeHTML(match[1]).trim();
+    if (/^https?:\/\//i.test(url)) return url;
+  }
+
+  return '';
+}
+
 // Parse RSS feed
 async function parseFeed(feedUrl: string) {
   try {
@@ -105,13 +126,16 @@ async function parseFeed(feedUrl: string) {
       const title = extractContent(/<title[^>]*>(.*?)<\/title>/s) || 'No title';
       const link = extractContent(/<link[^>]*>(.*?)<\/link>/s) || '';
       const description = extractContent(/<description[^>]*>(.*?)<\/description>/s) || '';
+      const contentEncoded = extractContent(/<content:encoded[^>]*>([\s\S]*?)<\/content:encoded>/s) || '';
       const pubDate = extractContent(/<pubDate[^>]*>(.*?)<\/pubDate>/s) || '';
+      const image = extractImage(item) || extractImage(contentEncoded) || extractImage(description);
 
       items.push({
         title: cleanFeedText(title),
         link: cleanFeedText(link),
         description: cleanFeedText(description).substring(0, 200),
         pubDate,
+        image,
       });
     }
 

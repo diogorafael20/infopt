@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import './App.css'
 
@@ -52,6 +52,14 @@ function tempoRelativo(valor) {
   return data.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
 }
 
+function textoActualizado(data) {
+  if (!data) return 'Ainda não actualizado'
+  const min = Math.max(0, Math.round((Date.now() - data.getTime()) / 60000))
+  if (min < 1) return 'Actualizado agora'
+  if (min === 1) return 'Actualizado há 1 min'
+  return `Actualizado há ${min} min`
+}
+
 function SourceBadge({ nome }) {
   const meta = metaFonte(nome)
 
@@ -66,6 +74,12 @@ function SourceBadge({ nome }) {
 }
 
 function Story({ noticia, destaque, style }) {
+  const [imgOk, setImgOk] = useState(Boolean(noticia.image))
+
+  useEffect(() => {
+    setImgOk(Boolean(noticia.image))
+  }, [noticia.image, noticia.link])
+
   return (
     <a
       className={`story${destaque ? ' destaque' : ''}`}
@@ -74,16 +88,30 @@ function Story({ noticia, destaque, style }) {
       rel="noopener noreferrer"
       style={style}
     >
-      <div className="story-top">
-        <SourceBadge nome={noticia.source} />
-        <time className="time" dateTime={noticia.pubDate}>
-          {tempoRelativo(noticia.pubDate)}
-        </time>
-      </div>
-      {destaque ? <h2>{noticia.title}</h2> : <h3>{noticia.title}</h3>}
-      {noticia.description ? <p>{noticia.description}</p> : null}
-      <div className="story-foot">
-        <span className="ler">Abrir notícia →</span>
+      {destaque && imgOk && noticia.image ? (
+        <div className="story-media">
+          <img
+            src={noticia.image}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setImgOk(false)}
+          />
+        </div>
+      ) : null}
+
+      <div className="story-body">
+        <div className="story-top">
+          <SourceBadge nome={noticia.source} />
+          <time className="time" dateTime={noticia.pubDate}>
+            {tempoRelativo(noticia.pubDate)}
+          </time>
+        </div>
+        {destaque ? <h2>{noticia.title}</h2> : <h3>{noticia.title}</h3>}
+        {noticia.description ? <p>{noticia.description}</p> : null}
+        <div className="story-foot">
+          <span className="ler">Abrir notícia →</span>
+        </div>
       </div>
     </a>
   )
@@ -91,37 +119,52 @@ function Story({ noticia, destaque, style }) {
 
 export default function App() {
   const [categoria, setCategoria] = useState('portugal')
+  const [fonte, setFonte] = useState('todas')
   const [noticias, setNoticias] = useState([])
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
+  const [actualizadoEm, setActualizadoEm] = useState(null)
+  const [agora, setAgora] = useState(() => Date.now())
 
-  useEffect(() => {
-    let activo = true
-
-    const carregar = async () => {
-      try {
-        setCarregando(true)
-        setErro(null)
-        const res = await axios.get(`${API_URL}/api/news/${categoria}`)
-        if (activo) setNoticias(Array.isArray(res.data) ? res.data : [])
-      } catch (e) {
-        console.error(e)
-        if (activo) {
-          setNoticias([])
-          setErro('Não foi possível carregar as notícias.')
-        }
-      } finally {
-        if (activo) setCarregando(false)
-      }
-    }
-
-    carregar()
-    return () => {
-      activo = false
+  const carregar = useCallback(async () => {
+    try {
+      setCarregando(true)
+      setErro(null)
+      const res = await axios.get(`${API_URL}/api/news/${categoria}`)
+      setNoticias(Array.isArray(res.data) ? res.data : [])
+      setActualizadoEm(new Date())
+    } catch (e) {
+      console.error(e)
+      setNoticias([])
+      setErro('Não foi possível carregar as notícias.')
+    } finally {
+      setCarregando(false)
     }
   }, [categoria])
 
-  const [destaque, ...resto] = useMemo(() => noticias, [noticias])
+  useEffect(() => {
+    setFonte('todas')
+    carregar()
+  }, [carregar])
+
+  useEffect(() => {
+    const id = setInterval(() => setAgora(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [])
+
+  const fontesDisponiveis = useMemo(() => {
+    const nomes = [...new Set(noticias.map((n) => n.source).filter(Boolean))]
+    return nomes.sort((a, b) => a.localeCompare(b, 'pt'))
+  }, [noticias])
+
+  const filtradas = useMemo(() => {
+    if (fonte === 'todas') return noticias
+    return noticias.filter((n) => n.source === fonte)
+  }, [noticias, fonte])
+
+  const [destaque, ...resto] = filtradas
+  const labelActualizado = textoActualizado(actualizadoEm)
+  void agora
 
   return (
     <div className="app">
@@ -132,9 +175,19 @@ export default function App() {
               Info<span>PT</span>
             </span>
           </a>
-          <div className="live-pill" aria-hidden="true">
-            <span className="live-dot" />
-            Ao minuto
+          <div className="mast-actions">
+            <div className="live-pill" aria-live="polite">
+              <span className="live-dot" />
+              {labelActualizado}
+            </div>
+            <button
+              type="button"
+              className="refresh-btn"
+              onClick={carregar}
+              disabled={carregando}
+            >
+              {carregando ? 'A actualizar…' : 'Actualizar'}
+            </button>
           </div>
         </div>
         <p className="tagline">
@@ -155,15 +208,45 @@ export default function App() {
         ))}
       </nav>
 
+      {fontesDisponiveis.length > 0 ? (
+        <div className="fonte-bar" aria-label="Filtrar por fonte">
+          <button
+            type="button"
+            className={`fonte-chip${fonte === 'todas' ? ' ativo' : ''}`}
+            onClick={() => setFonte('todas')}
+          >
+            Todas
+          </button>
+          {fontesDisponiveis.map((nome) => {
+            const meta = metaFonte(nome)
+            return (
+              <button
+                key={nome}
+                type="button"
+                className={`fonte-chip${fonte === nome ? ' ativo' : ''}`}
+                onClick={() => setFonte(nome)}
+                style={fonte === nome ? { borderColor: meta.color, color: meta.color } : undefined}
+              >
+                <span className="fonte-dot" style={{ background: meta.color }} />
+                {meta.short}
+                <span className="fonte-full">{nome}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+
       <main>
         {erro ? <div className="erro">{erro}</div> : null}
-        {carregando ? <div className="status">A carregar notícias…</div> : null}
-
-        {!carregando && !erro && noticias.length === 0 ? (
-          <div className="status">Sem notícias nesta categoria de momento.</div>
+        {carregando && noticias.length === 0 ? (
+          <div className="status">A carregar notícias…</div>
         ) : null}
 
-        {!carregando && noticias.length > 0 ? (
+        {!carregando && !erro && filtradas.length === 0 ? (
+          <div className="status">Sem notícias para este filtro.</div>
+        ) : null}
+
+        {filtradas.length > 0 ? (
           <div className="feed">
             {destaque ? (
               <Story noticia={destaque} destaque style={{ animationDelay: '0.04s' }} />
