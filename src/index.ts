@@ -227,7 +227,7 @@ async function parseFeed(feedUrl: string) {
   }
 }
 
-router.get('/', () => {
+router.get('/api', () => {
   return new Response(
     JSON.stringify({
       name: 'InfoPT',
@@ -289,4 +289,19 @@ router.get('/health', () => {
 
 router.all('*', () => new Response('Not found', { status: 404 }));
 
-export default router;
+export default {
+  async fetch(request: Request, env: { ASSETS?: { fetch: (request: Request) => Promise<Response> } }, ctx: ExecutionContext) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    if (path === '/api' || path.startsWith('/api/') || path === '/health') {
+      return router.handle(request, env, ctx);
+    }
+
+    if (env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
+
+    return router.handle(request, env, ctx);
+  },
+};

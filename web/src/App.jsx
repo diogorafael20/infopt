@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import './App.css'
 
-const API_URL = 'https://infopt.diogorafael212.workers.dev'
+const API_URL =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'infopt.diogorafael.com' ||
+    window.location.hostname.endsWith('.workers.dev'))
+    ? ''
+    : 'https://infopt.diogorafael212.workers.dev'
 
 const CATEGORIAS = [
   { id: 'portugal', label: 'Portugal' },

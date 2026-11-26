@@ -2,3 +2,8 @@ name = "infopt"
 main = "src/index.ts"
 compatibility_date = "2024-12-16"
 compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
