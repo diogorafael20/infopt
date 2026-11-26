@@ -1,12 +1,9 @@
-# InfoPT — Agregador de Notícias Portuguesas
+# InfoPT — Agregador de Notícias Portuguesas - Ongoing Project
 
 🗞️ Notícias de Portugal, Internacional, Futebol e Finanças em tempo real.
 
 **Acesso rápido:**
-- 🌐 Web: https://infopt.github.io
-- 📱 Mobile: React Native (iOS/Android)
-- 🔌 API: https://infopt.diogorafael212.workers.dev
-
+- 🌐 Web:(https://diogorafael20.github.io/infopt/)
 ## Fontes de Notícias
 
 **Portugal:** Público · Observador · Expresso · Visão
