@@ -5,26 +5,40 @@ const router = Router();
 // News sources configuration
 const NEWS_SOURCES = {
   portugal: [
-    { name: 'Público', url: 'https://www.publico.pt/rss' },
+    { name: 'Público', url: 'https://feeds.feedburner.com/PublicoRSS' },
     { name: 'Observador', url: 'https://observador.pt/feed/' },
-    { name: 'Expresso', url: 'https://expresso.pt/rss' },
     { name: 'Visão', url: 'https://visao.pt/rss' },
+    { name: 'CM', url: 'https://www.cmjornal.pt/rss' },
+    { name: 'DN', url: 'https://feeds.feedburner.com/dn-ultimas' },
+    { name: 'JN', url: 'https://feeds.feedburner.com/jn-ultimas' },
+    { name: 'RTP', url: 'https://www.rtp.pt/noticias/rss' },
+    { name: 'CNN Portugal', url: 'https://cnnportugal.iol.pt/rss.xml' },
+    { name: 'Notícias ao Minuto', url: 'https://www.noticiasaominuto.com/rss/ultima-hora' },
     { name: 'TSF', url: 'https://feeds.feedburner.com/TSF-Ultimas' },
   ],
   internacional: [
-    { name: 'BBC', url: 'http://feeds.bbc.co.uk/news/world/rss.xml' },
-    { name: 'Reuters', url: 'https://www.reutersagency.com/feed/?rpc=1&taxonomy=best-topics' },
+    { name: 'BBC', url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
+    { name: 'BBC Brasil', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml' },
     { name: 'CNN', url: 'http://rss.cnn.com/rss/edition.rss' },
+    { name: 'Reuters', url: 'https://www.reutersagency.com/feed/?rpc=1&taxonomy=best-topics' },
+    { name: 'NYT', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml' },
+    { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml' },
+    { name: 'France 24', url: 'https://www.france24.com/en/rss' },
+    { name: 'DW', url: 'https://rss.dw.com/xml/rss_en_world' },
+    { name: 'El País', url: 'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada' },
   ],
   futebol: [
-    { name: 'Abola', url: 'https://www.abola.pt/rss/feed' },
+    { name: 'Abola', url: 'https://feeds.feedburner.com/abola' },
     { name: 'Record', url: 'https://www.record.pt/rss' },
     { name: 'Maisfutebol', url: 'https://maisfutebol.iol.pt/rss' },
+    { name: 'ZeroZero', url: 'https://www.zerozero.pt/rss/noticias.php' },
   ],
   financas: [
     { name: 'ECO', url: 'https://eco.sapo.pt/feed/' },
     { name: 'Dinheiro Vivo', url: 'https://www.dinheirovivo.pt/feed/' },
     { name: 'Negócios', url: 'https://www.negocios.pt/rss' },
+    { name: 'Jornal Económico', url: 'https://jornaleconomico.pt/feed' },
+    { name: 'Bloomberg', url: 'https://feeds.bloomberg.com/markets/news.rss' },
   ],
 };
 

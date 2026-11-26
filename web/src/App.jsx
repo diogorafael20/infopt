@@ -14,18 +14,32 @@ const CATEGORIAS = [
 const FONTES = {
   Público: { color: '#111111', short: 'PÚB' },
   Observador: { color: '#1a1a1a', short: 'OBS' },
-  Expresso: { color: '#c41e3a', short: 'EXP' },
   Visão: { color: '#e30613', short: 'VIS' },
+  CM: { color: '#c41230', short: 'CM' },
+  DN: { color: '#0055a5', short: 'DN' },
+  JN: { color: '#e30613', short: 'JN' },
+  RTP: { color: '#0072ce', short: 'RTP' },
+  'CNN Portugal': { color: '#cc0000', short: 'CNN' },
+  'Notícias ao Minuto': { color: '#f5a623', short: 'NAM' },
   TSF: { color: '#c8102e', short: 'TSF' },
   BBC: { color: '#bb1919', short: 'BBC' },
+  'BBC Brasil': { color: '#bb1919', short: 'BBC' },
   Reuters: { color: '#ff8000', short: 'REU' },
   CNN: { color: '#cc0000', short: 'CNN' },
+  NYT: { color: '#111111', short: 'NYT' },
+  'Al Jazeera': { color: '#fa9000', short: 'AJ' },
+  'France 24': { color: '#004b93', short: 'F24' },
+  DW: { color: '#0098d8', short: 'DW' },
+  'El País': { color: '#1066a8', short: 'EP' },
   Abola: { color: '#e30613', short: 'ABL' },
   Record: { color: '#c8102e', short: 'REC' },
   Maisfutebol: { color: '#009639', short: 'MF' },
+  ZeroZero: { color: '#1b5e20', short: 'ZZ' },
   ECO: { color: '#00a3e0', short: 'ECO' },
   'Dinheiro Vivo': { color: '#0b3d2e', short: 'DV' },
   Negócios: { color: '#003366', short: 'NEG' },
+  'Jornal Económico': { color: '#1a237e', short: 'JE' },
+  Bloomberg: { color: '#2800d7', short: 'BBG' },
 }
 
 function metaFonte(nome) {
@@ -73,33 +87,15 @@ function SourceBadge({ nome }) {
   )
 }
 
-function Story({ noticia, destaque, style }) {
-  const [imgOk, setImgOk] = useState(Boolean(noticia.image))
-
-  useEffect(() => {
-    setImgOk(Boolean(noticia.image))
-  }, [noticia.image, noticia.link])
-
+function Story({ noticia, style }) {
   return (
     <a
-      className={`story${destaque ? ' destaque' : ''}`}
+      className="story"
       href={noticia.link}
       target="_blank"
       rel="noopener noreferrer"
       style={style}
     >
-      {destaque && imgOk && noticia.image ? (
-        <div className="story-media">
-          <img
-            src={noticia.image}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setImgOk(false)}
-          />
-        </div>
-      ) : null}
-
       <div className="story-body">
         <div className="story-top">
           <SourceBadge nome={noticia.source} />
@@ -107,7 +103,7 @@ function Story({ noticia, destaque, style }) {
             {tempoRelativo(noticia.pubDate)}
           </time>
         </div>
-        {destaque ? <h2>{noticia.title}</h2> : <h3>{noticia.title}</h3>}
+        <h3>{noticia.title}</h3>
         {noticia.description ? <p>{noticia.description}</p> : null}
         <div className="story-foot">
           <span className="ler">Abrir notícia →</span>
@@ -162,7 +158,6 @@ export default function App() {
     return noticias.filter((n) => n.source === fonte)
   }, [noticias, fonte])
 
-  const [destaque, ...resto] = filtradas
   const labelActualizado = textoActualizado(actualizadoEm)
   void agora
 
@@ -248,18 +243,13 @@ export default function App() {
 
         {filtradas.length > 0 ? (
           <div className="feed">
-            {destaque ? (
-              <Story noticia={destaque} destaque style={{ animationDelay: '0.04s' }} />
-            ) : null}
-            <div className="feed-side">
-              {resto.map((noticia, i) => (
-                <Story
-                  key={`${noticia.link}-${i}`}
-                  noticia={noticia}
-                  style={{ animationDelay: `${0.06 + i * 0.03}s` }}
-                />
-              ))}
-            </div>
+            {filtradas.map((noticia, i) => (
+              <Story
+                key={`${noticia.link}-${i}`}
+                noticia={noticia}
+                style={{ animationDelay: `${0.04 + i * 0.03}s` }}
+              />
+            ))}
           </div>
         ) : null}
       </main>
