@@ -12,36 +12,27 @@ const CATEGORIAS = [
 ]
 
 const FONTES = {
-  Público: { domain: 'publico.pt', color: '#111111', short: 'PÚB' },
-  Observador: { domain: 'observador.pt', color: '#111111', short: 'OBS' },
-  Expresso: { domain: 'expresso.pt', color: '#c41e3a', short: 'EXP' },
-  Visão: { domain: 'visao.pt', color: '#e30613', short: 'VIS' },
-  TSF: { domain: 'tsf.pt', color: '#e30613', short: 'TSF' },
-  BBC: { domain: 'bbc.com', color: '#bb1919', short: 'BBC' },
-  Reuters: { domain: 'reuters.com', color: '#ff8000', short: 'REU' },
-  CNN: { domain: 'cnn.com', color: '#cc0000', short: 'CNN' },
-  Abola: { domain: 'abola.pt', color: '#e30613', short: 'ABL' },
-  Record: { domain: 'record.pt', color: '#c8102e', short: 'REC' },
-  Maisfutebol: { domain: 'maisfutebol.iol.pt', color: '#009639', short: 'MF' },
-  ECO: { domain: 'eco.sapo.pt', color: '#00a3e0', short: 'ECO' },
-  'Dinheiro Vivo': { domain: 'dinheirovivo.pt', color: '#0b3d2e', short: 'DV' },
-  Negócios: { domain: 'negocios.pt', color: '#003366', short: 'NEG' },
+  Público: { color: '#111111', short: 'PÚB' },
+  Observador: { color: '#1a1a1a', short: 'OBS' },
+  Expresso: { color: '#c41e3a', short: 'EXP' },
+  Visão: { color: '#e30613', short: 'VIS' },
+  TSF: { color: '#c8102e', short: 'TSF' },
+  BBC: { color: '#bb1919', short: 'BBC' },
+  Reuters: { color: '#ff8000', short: 'REU' },
+  CNN: { color: '#cc0000', short: 'CNN' },
+  Abola: { color: '#e30613', short: 'ABL' },
+  Record: { color: '#c8102e', short: 'REC' },
+  Maisfutebol: { color: '#009639', short: 'MF' },
+  ECO: { color: '#00a3e0', short: 'ECO' },
+  'Dinheiro Vivo': { color: '#0b3d2e', short: 'DV' },
+  Negócios: { color: '#003366', short: 'NEG' },
 }
 
 function metaFonte(nome) {
   return FONTES[nome] || {
-    domain: '',
     color: '#243447',
     short: (nome || '?').slice(0, 3).toUpperCase(),
   }
-}
-
-function logoCandidates(domain) {
-  if (!domain) return []
-  return [
-    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
-    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`,
-  ]
 }
 
 function tempoRelativo(valor) {
@@ -63,28 +54,12 @@ function tempoRelativo(valor) {
 
 function SourceBadge({ nome }) {
   const meta = metaFonte(nome)
-  const candidatos = useMemo(() => logoCandidates(meta.domain), [meta.domain])
-  const [indice, setIndice] = useState(0)
-  const falhou = indice >= candidatos.length
 
   return (
     <div className="source" title={nome}>
-      {!falhou ? (
-        <span className="source-logo-wrap">
-          <img
-            className="source-logo"
-            src={candidatos[indice]}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setIndice((i) => i + 1)}
-          />
-        </span>
-      ) : (
-        <span className="source-fallback" style={{ background: meta.color }}>
-          {meta.short}
-        </span>
-      )}
+      <span className="source-mark" style={{ background: meta.color }}>
+        {meta.short}
+      </span>
       <span className="source-name">{nome}</span>
     </div>
   )
