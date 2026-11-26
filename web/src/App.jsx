@@ -36,9 +36,13 @@ function metaFonte(nome) {
   }
 }
 
-function logoUrl(domain) {
-  if (!domain) return ''
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`
+function logoCandidates(domain) {
+  if (!domain) return []
+  return [
+    `https://logo.clearbit.com/${domain}?size=128`,
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`,
+  ]
 }
 
 function tempoRelativo(valor) {
@@ -60,18 +64,23 @@ function tempoRelativo(valor) {
 
 function SourceBadge({ nome }) {
   const meta = metaFonte(nome)
-  const [falhou, setFalhou] = useState(!meta.domain)
+  const candidatos = useMemo(() => logoCandidates(meta.domain), [meta.domain])
+  const [indice, setIndice] = useState(0)
+  const falhou = indice >= candidatos.length
 
   return (
     <div className="source" title={nome}>
       {!falhou ? (
-        <img
-          className="source-logo"
-          src={logoUrl(meta.domain)}
-          alt=""
-          loading="lazy"
-          onError={() => setFalhou(true)}
-        />
+        <span className="source-logo-wrap">
+          <img
+            className="source-logo"
+            src={candidatos[indice]}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setIndice((i) => i + 1)}
+          />
+        </span>
       ) : (
         <span className="source-fallback" style={{ background: meta.color }}>
           {meta.short}
@@ -144,7 +153,7 @@ export default function App() {
     <div className="app">
       <header className="masthead">
         <div className="brand-row">
-          <a className="brand" href="/" aria-label="InfoPT">
+          <a className="brand" href="./" aria-label="InfoPT">
             <span className="brand-mark">
               Info<span>PT</span>
             </span>
@@ -185,13 +194,15 @@ export default function App() {
             {destaque ? (
               <Story noticia={destaque} destaque style={{ animationDelay: '0.04s' }} />
             ) : null}
-            {resto.map((noticia, i) => (
-              <Story
-                key={`${noticia.link}-${i}`}
-                noticia={noticia}
-                style={{ animationDelay: `${0.06 + i * 0.03}s` }}
-              />
-            ))}
+            <div className="feed-side">
+              {resto.map((noticia, i) => (
+                <Story
+                  key={`${noticia.link}-${i}`}
+                  noticia={noticia}
+                  style={{ animationDelay: `${0.06 + i * 0.03}s` }}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
       </main>
